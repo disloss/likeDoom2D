@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour
     public Transform muzzle; // 枪口位置
     public AudioClip shootSound; //射击音效
     private float bulletSpeed = 60f; // 子弹速度
-    private float fireRate = 0.2f; // 射击间隔（秒）
 
 
 
