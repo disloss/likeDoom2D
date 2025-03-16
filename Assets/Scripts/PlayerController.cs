@@ -15,11 +15,12 @@ public class PlayerController : MonoBehaviour
     public Transform HandAim; //手部的变换组件
     public Camera mainCamera; //主相机
 
-    public GameObject bulletPrefab;  // 子弹预制体
-    public Transform muzzle;        // 枪口位置
-    private float bulletSpeed = 20f; // 子弹速度
-    private float fireRate = 0.2f;   // 射击间隔（秒）
-    private float nextFireTime = 0f;
+    public GameObject bulletPrefab; // 子弹预制体
+    public Transform muzzle; // 枪口位置
+    public AudioClip shootSound; //射击音效
+    private float bulletSpeed = 60f; // 子弹速度
+    private float fireRate = 0.2f; // 射击间隔（秒）
+
 
 
     private void Start()
@@ -102,7 +103,6 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             StartCoroutine(Shoot());
-            nextFireTime = Time.time + fireRate;
         }
     }
 
@@ -110,13 +110,13 @@ public class PlayerController : MonoBehaviour
     {
         // 实例化子弹
         GameObject bullet = Instantiate(bulletPrefab, muzzle.position, muzzle.rotation);
-        bullet.SetActive(true);
+        //bullet.SetActive(true);
         // 设置子弹方向（根据枪口朝向）
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
         bulletRb.velocity = muzzle.right * bulletSpeed;
 
         // 可选：播放射击音效
-        // AudioSource.PlayClipAtPoint(shootSound, muzzle.position);
+         AudioSource.PlayClipAtPoint(shootSound, muzzle.position);
         yield return new WaitForSecondsRealtime(3f);
         Destroy(bullet);
     }
