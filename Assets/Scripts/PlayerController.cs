@@ -124,10 +124,10 @@ public class PlayerController : MonoBehaviour
 
     private bool IsWalkable(Vector3 startPos, Vector3 targetPos)//判断这一次行走是否可行
     {
-        if (Physics2D.OverlapCircle(targetPos, 0.2f, solidObjectsLayer) != null)//如果面前一格有实体或者有NPC，则不能移动
-        {
-            return false;
-        }
+        //if (Physics2D.OverlapCircle(targetPos, 0.2f, solidObjectsLayer) != null)//如果面前一格有实体或者有NPC，则不能移动
+        //{
+        //    return false;
+        //}
         return true;
     }
 
