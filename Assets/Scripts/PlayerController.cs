@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
         // 实例化子弹
         GameObject bullet = Instantiate(bulletPrefab, muzzle.position, muzzle.rotation);
         //bullet.SetActive(true);
-        // 设置子弹方向（根据枪口朝向）
+        // 设置子弹方向和速度（根据枪口朝向）
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
         bulletRb.velocity = muzzle.right * bulletSpeed;
 
