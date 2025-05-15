@@ -1,7 +1,9 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Unity.VisualScripting;
+using UnityEditor.Timeline;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -10,7 +12,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 input; //两个方向的向量
     private Animator animator; //动画组件
     public LayerMask solidObjectsLayer; //实体对象层
-    public new Rigidbody2D rigidbody2D; //刚体组件
+    private new Rigidbody2D rigidbody2D; //刚体组件
     private SpriteRenderer CharacterSpriteRenderer; //人物精灵组件
     public Transform HandAim; //手部的变换组件
     public Camera mainCamera; //主相机
@@ -19,6 +21,8 @@ public class PlayerController : MonoBehaviour
     public Transform muzzle; // 枪口位置
     public AudioClip shootSound; //射击音效
     private float bulletSpeed = 60f; // 子弹速度
+    private float currentHP = 50; //当前血量
+    private float maxHP = 100; //最大血量
 
 
 
@@ -27,6 +31,7 @@ public class PlayerController : MonoBehaviour
         //初始化
         animator = GetComponent<Animator>();
         CharacterSpriteRenderer = GetComponent<SpriteRenderer>();
+        rigidbody2D = GetComponent<Rigidbody2D>();
     }
 
     public Vector3 FaceDir()//获取面向的方向的函数
@@ -72,6 +77,13 @@ public class PlayerController : MonoBehaviour
                     CharacterSpriteRenderer.flipX = true; // 向左（翻转Sprite）
                 }
                 rigidbody2D.velocity = input * moveSpeed;
+            }
+
+            //如果玩家按下空格，则开始翻滚
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Vector3 aimDirection = input.normalized; //获取当前前进的方向
+                transform.DOMove(transform.position + (5f * aimDirection), 0.3f).SetEase(Ease.InOutSine); //翻滚吧！
             }
         }
         else
@@ -129,6 +141,16 @@ public class PlayerController : MonoBehaviour
         //    return false;
         //}
         return true;
+    }
+
+    public void HealthChange(float changeHP)
+    {
+        currentHP = Mathf.Min(currentHP + changeHP, maxHP);
+        if(currentHP <= 0)
+        {
+            Debug.Log("玩家死亡");
+        }
+        UIManager.Instance.SetHP(currentHP);
     }
 
 }
