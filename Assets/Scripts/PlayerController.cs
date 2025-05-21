@@ -8,23 +8,21 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed; //移动速度
     private Vector2 input; //两个方向的向量
     private Animator animator; //动画组件
     public LayerMask solidObjectsLayer; //实体对象层
     private new Rigidbody2D rigidbody2D; //刚体组件
     private SpriteRenderer CharacterSpriteRenderer; //人物精灵组件
-    public Transform HandAim; //手部的变换组件
+    private Transform handAim; //手部的变换组件
     public Camera mainCamera; //主相机
-
     public GameObject bulletPrefab; // 子弹预制体
-    public Transform muzzle; // 枪口位置
+    private Transform muzzle; // 枪口位置
     public AudioClip shootSound; //射击音效
+
+    public float moveSpeed = 5; //移动速度
     private float bulletSpeed = 60f; // 子弹速度
     private float currentHP = 50; //当前血量
     private float maxHP = 100; //最大血量
-
-
 
     private void Start()
     {
@@ -32,6 +30,9 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         CharacterSpriteRenderer = GetComponent<SpriteRenderer>();
         rigidbody2D = GetComponent<Rigidbody2D>();
+        handAim = transform.Find("Hand");
+        muzzle = transform.Find("Hand/muzzle");
+
     }
 
     public Vector3 FaceDir()//获取面向的方向的函数
@@ -39,11 +40,10 @@ public class PlayerController : MonoBehaviour
         return new Vector3(animator.GetFloat("MoveX"), animator.GetFloat("MoveY"));
     }
 
-    // Update is called once per frame
     public void Update()//自由移动时使用的帧
     {
-        Move(); //移动相关函数，主要负责移动
         Hand(); //手部相关函数，负责武器瞄准，攻击等
+        Move(); //移动相关函数，主要负责移动
     }
 
 
@@ -64,27 +64,17 @@ public class PlayerController : MonoBehaviour
             targetPos.x += input.x;
             targetPos.y += input.y;
 
-            //先判断是否可以行走，再移动到目标位置
-            if (IsWalkable(transform.position, targetPos))
+            
+            // 根据输入方向翻转Sprite
+            if (input.x > 0)
             {
-                // 根据输入方向翻转Sprite
-                if (input.x > 0)
-                {
-                    CharacterSpriteRenderer.flipX = false; // 向右（默认方向）
-                }
-                else if (input.x < 0)
-                {
-                    CharacterSpriteRenderer.flipX = true; // 向左（翻转Sprite）
-                }
-                rigidbody2D.velocity = input * moveSpeed;
+                CharacterSpriteRenderer.flipX = false; // 向右（默认方向）
             }
-
-            //如果玩家按下空格，则开始翻滚
-            if (Input.GetKeyDown(KeyCode.Space))
+            else if (input.x < 0)
             {
-                Vector3 aimDirection = input.normalized; //获取当前前进的方向
-                transform.DOMove(transform.position + (5f * aimDirection), 0.3f).SetEase(Ease.InOutSine); //翻滚吧！
+                CharacterSpriteRenderer.flipX = true; // 向左（翻转Sprite）
             }
+            rigidbody2D.velocity = input * moveSpeed;
         }
         else
         {
@@ -92,24 +82,31 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("IsMoving", false);
             rigidbody2D.velocity = Vector2.zero;
         }
+
+        //如果玩家按下空格，则开始翻滚
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Vector3 aimDirection = input.normalized; //获取当前前进的方向
+            transform.DOMove(transform.position + (5f * aimDirection), 0.3f).SetEase(Ease.InOutSine); //翻滚吧！
+        }
     }
 
 
     private void Hand()
     {
         Vector3 mouseScreenPos = Input.mousePosition; //获取鼠标的屏幕位置
-        Vector3 HandscreenPos = mainCamera.WorldToScreenPoint(HandAim.position); // 获取手部的屏幕位置
+        Vector3 HandscreenPos = mainCamera.WorldToScreenPoint(handAim.position); // 获取手部的屏幕位置
         Vector3 aimDirection = (mouseScreenPos - HandscreenPos).normalized; // 得到鼠标相对于手部的位置
         float angle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg; // 获取欧拉角
         if(angle > 90 || angle < -90) //使手翻转
         {
-            HandAim.localScale = new Vector3(1, -1, 1);
+            handAim.localScale = new Vector3(1, -1, 1);
         }
         else
         {
-            HandAim.localScale = new Vector3(1, 1, 1);
+            handAim.localScale = new Vector3(1, 1, 1);
         }
-        HandAim.eulerAngles = new Vector3(0, 0, angle); //使手旋转
+        handAim.eulerAngles = new Vector3(0, 0, angle); //使手旋转
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -133,15 +130,6 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
-    private bool IsWalkable(Vector3 startPos, Vector3 targetPos)//判断这一次行走是否可行
-    {
-        //if (Physics2D.OverlapCircle(targetPos, 0.2f, solidObjectsLayer) != null)//如果面前一格有实体或者有NPC，则不能移动
-        //{
-        //    return false;
-        //}
-        return true;
-    }
 
     public void HealthChange(float changeHP)
     {
